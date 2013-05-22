@@ -202,24 +202,48 @@ $.extend(MomentumTracker.prototype, {
 			initSelector: ":jqmData(role='virtualgrid')"
 		},
 
-		//TODO : I will deprecate this function. 
-		create : function () {
-			this._create.apply( this, arguments );
+		_create : function ( ) {	
+			var self = this,
+				successCB = function ( loadedJsonData ) {
+					$.mobile.loading("hide");
+					self._itemData =  function ( idx ) {
+						return loadedJsonData [ idx ];
+					};
+					self._numItemData = loadedJsonData.length;
+					self._getObjectNames( self._itemData( 0 ) );
+					self._initWidget();
+				},
+				errorCB = function ( data ) {
+					$.mobile.loading("hide");
+				};
+
+			if ( self.options.repository === null ) {
+				return false;
+			}
+
+			$.mobile.loading( "show" , {
+				text: "loading.",
+				textVisible : true,
+				theme : "z",
+				id : "my-loader",
+				html : ""
+			});
+
+			$.ajax( {
+				url: self.options.repository,
+				dataType: self.options.dataType,
+				timeout : 2000,
+				cache: true,
+				async: false,
+				success: successCB,
+				error: errorCB
+			} );
+			return true;
 		},
 
-		_create : function ( args ) {
+		_initWidget : function () {
 			var self = this,
 				opts = self.options;
-
-			// itemData
-			// If mandatory options are not given, Do nothing.
-			if ( !args ) {
-				return ;
-			}
-
-			if ( !self._loadData( args ) ) {
-				return;
-			}
 
 			// make a fragment.
 			self._eventType = $.support.touch ? "touch" : "mouse";
@@ -268,34 +292,11 @@ $.extend(MomentumTracker.prototype, {
 			self._setScrollBarPos = $.noop;
 			self._hideScrollBar = $.noop;
 			self._showScrollBar = $.noop;
+			self._$document.one( "pageshow  " , function( event){
 
 			self.refresh();
-		},
+			});
 
-		// The argument is checked for compliance with the specified format.
-		// @param args   : Object
-		// @return boolean
-		_loadData : function ( args ) {
-			var self = this;
-
-			if ( args.itemData && typeof args.itemData === "function" ) {
-				self._itemData = args.itemData;
-			} else {
-				return false;
-			}
-			if ( args.numItemData ) {
-				if ( typeof args.numItemData === "function" ) {
-					self._numItemData = args.numItemData( );
-				} else if ( typeof args.numItemData === "number" ) {
-					self._numItemData = args.numItemData;
-				} else {
-					return false;
-				}
-			} else {
-				return false;
-			}
-			self._getObjectNames( self._itemData( 0 ) );
-			return true;
 		},
 
 		refresh : function () {
@@ -313,7 +314,6 @@ $.extend(MomentumTracker.prototype, {
 			height = self._calculateClipSize( "height" );
 			self._$view.width( width ).height( height );
 			self._$clip.width( width ).height( height );
-
 			self._$clipSize.width = width;
 			self._$clipSize.height = height;
 			self._calculateTemplateItemSize();
