@@ -197,7 +197,8 @@ $.extend(MomentumTracker.prototype, {
 			// virtualgrid option
 			template : "",
 			direction : "y",
-			rotation : false,
+			repository: null,
+			dataType : "json",
 			initSelector: ":jqmData(role='virtualgrid')"
 		},
 
