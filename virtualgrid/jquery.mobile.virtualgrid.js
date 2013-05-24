@@ -22,7 +22,8 @@
  *
  *	Author: Kangsik Kim <kangsik81.kim@samsung.com>
 */
-
+window._acTime = 0;
+window._acTime2 = 0;
 ( function ($, window, document, undefined) {
 
 function scrollbarWidth()
@@ -181,10 +182,8 @@ $.extend(MomentumTracker.prototype, {
 		_totalRowCnt : 0,
 		_maxSize : 0,
 		_scrollBarWidth :0,
-
 		_headItemIdx :0,
 		_tailItemIdx :0,
-
 		// axis - ( true : x , false : y )
 		_direction : false,
 		_keepGoing : true,
@@ -192,6 +191,9 @@ $.extend(MomentumTracker.prototype, {
 		// timer
 		_timerInterval : 10,
 		_timerCB : null,
+		// draw widget 
+		_loadedData : false,
+		_isPageShow : false,
 
 		options : {
 			// virtualgrid option
@@ -199,52 +201,78 @@ $.extend(MomentumTracker.prototype, {
 			direction : "y",
 			repository: null,
 			dataType : "json",
+			replaceFunc : null,
 			initSelector: ":jqmData(role='virtualgrid')"
 		},
-
 		_create : function ( ) {	
 			var self = this,
+				_repository = self.options.repository,
+				_dataType = self.options.dataType.toLowerCase(),
 				successCB = function ( loadedJsonData ) {
 					$.mobile.loading("hide");
+					console.log("successCB....");
 					self._itemData =  function ( idx ) {
 						return loadedJsonData [ idx ];
 					};
 					self._numItemData = loadedJsonData.length;
 					self._getObjectNames( self._itemData( 0 ) );
 					self._initWidget();
+					self._loadedData = true;
+					self.element.trigger("virtualgrid.firstdraw");
 				},
 				errorCB = function ( data ) {
 					$.mobile.loading("hide");
 				};
 
-			if ( self.options.repository === null ) {
-				return false;
+			if ( _repository === null ) {
+				return ;
 			}
 
+			if (  !( _dataType === "json" ||  _dataType === 'xml')  ){
+				console.log  (" >> dataType : " + _dataType);
+				return ;
+			}
+
+			self.element.bind( "virtualgrid.firstdraw", function ( event ) {
+//				console.debug(" virtualgrid.firstdraw [ PageShow : %s - loadData : %s ] ", self._isPageShow, self._loadedData );
+				if ( self._isPageShow && self._loadedData ) {
+					self.element.unbind("virtualgrid.firstdraw");
+					self.refresh();
+				}
+			});
+
+			self._$document = $( document );
 			$.mobile.loading( "show" , {
 				text: "loading.",
 				textVisible : true,
 				theme : "z",
-				id : "my-loader",
 				html : ""
 			});
-
 			$.ajax( {
-				url: self.options.repository,
-				dataType: self.options.dataType,
+				url: _repository,
+				dataType: _dataType,
 				timeout : 2000,
 				cache: true,
 				async: false,
 				success: successCB,
 				error: errorCB
 			} );
-			return true;
+
+	
+			( self.element.parents(".ui-page") || self._$document ).one( "pageshow  " , function( event ) {
+				// console.debug("[pageshow] page min height : %s ", $(".ui-page").css("min-height") );
+				if ( $( self.options.initSelector,  event.target ).length !== 0  ){
+					self._isPageShow = true;
+					self.element.trigger("virtualgrid.firstdraw");
+				}
+			});
+
+
 		},
 
 		_initWidget : function () {
 			var self = this,
 				opts = self.options;
-
 			// make a fragment.
 			self._eventType = $.support.touch ? "touch" : "mouse";
 			self._scrollBarWidth = scrollbarWidth();
@@ -254,26 +282,18 @@ $.extend(MomentumTracker.prototype, {
 				self._fragment.appendChild( element );
 				return element;
 			};
-
-			self._$document = $( document );
-
 			self._timerCB = function () {
 				self._handleMomentumScroll();
 			};
-
 			// read defined properties(width and height) from dom element.
 			self._inheritedSize = self._getinheritedSize( self.element );
-
 			// set a scroll direction.
 			self._direction = opts.direction === "x" ? true : false;
-
 			// create trakcer
 			self._tracker = new MomentumTracker();
-
 			// make view layer
 			self._$clip = $( self.element ).addClass( "ui-scrollview-clip" ).addClass( "ui-virtualgrid-view" );
 			self._$clip.css( "overflow", "hidden" );
-
 			self._$view = $( document.createElement( "div" ) ).addClass( "ui-virtualgrid-overthrow" );
 			self._$view[0].style.overflow = "auto";
 			if ( self._direction ) {
@@ -282,21 +302,13 @@ $.extend(MomentumTracker.prototype, {
 				self._$view[0].style[ "overflow-x" ] = "hidden";
 			}
 			self._$clip.append( self._$view);
-
 			self._$content = $( "<div class='ui-virtualgrid-content' style='position:relative;' ></div>" );
 			self._$view.append( self._$content );
-
 			self._addEventListener();
-
 			// optional functions
 			self._setScrollBarPos = $.noop;
 			self._hideScrollBar = $.noop;
 			self._showScrollBar = $.noop;
-			self._$document.one( "pageshow  " , function( event){
-
-			self.refresh();
-			});
-
 		},
 
 		refresh : function () {
@@ -316,6 +328,7 @@ $.extend(MomentumTracker.prototype, {
 			self._$clip.width( width ).height( height );
 			self._$clipSize.width = width;
 			self._$clipSize.height = height;
+			console.log("clip width : %s, clip height : %s ", width, height);
 			self._calculateTemplateItemSize();
 			self._initPageProperty();
 
@@ -450,9 +463,12 @@ $.extend(MomentumTracker.prototype, {
 			var self = this;
 
 			if ( self._eventType === "mouse" ) { // mouse event.
-
 				self._$content.delegate( "img", "dragstart", function ( event ) {
 					event.preventDefault();
+				});
+				self._$view.bind("scroll", function( event ){
+					var viewElement = self._$view[0];
+					self._setScrollPosition(  viewElement.scrollLeft,  viewElement.scrollTop);
 				});
 
 				this._dragStartEvt = "mousedown";
@@ -508,7 +524,8 @@ $.extend(MomentumTracker.prototype, {
 					height : 0
 				};
 
-			while ( $target[0].nodeType === Node.ELEMENT_NODE && (ret.isDefinedWidth === false || ret.isHeightDefined === false )) {
+			// Node.ELEMENT_NODE : 1
+			while ( $target[0].nodeType === 1 && (ret.isDefinedWidth === false || ret.isHeightDefined === false )) {
 				height = $target[0].style.height;
 				width = $target[0].style.width;
 
@@ -672,6 +689,7 @@ $.extend(MomentumTracker.prototype, {
 		//----------------------------------------------------//
 		_setScrollPosition: function ( x, y ) {
 			var self = this,
+				$content =  self._$content ,
 				prevPos = self._storedScrollPos,
 				curPos = self._direction ? x : y,
 				diffPos = 0,
@@ -679,8 +697,9 @@ $.extend(MomentumTracker.prototype, {
 				templateItemSize =0,
 				di = 0,
 				i = 0,
-				$row = null;
-
+				$row = null,
+				startTime = 0 , duration = 0;
+			startTime = $.now();
 			if ( self._direction ) {
 				curPos = x;
 				templateItemSize = self._$templateItemSize.width;
@@ -694,8 +713,9 @@ $.extend(MomentumTracker.prototype, {
 			di = parseInt( diffPos / templateItemSize, 10 );
 
 			if ( di > 0 && self._tailItemIdx < self._totalRowCnt ) { // scroll down
-				for ( i = 0; i < di; i++ ) {
-					$row = $( "[row-index='"+self._headItemIdx+"']" ,self._$content );
+				for ( ; i < di; i++ ) {
+					// $row = $( "[row-index='"+self._headItemIdx+"']" ,self._$content );
+					$row = $content.children("[row-index='"+self._headItemIdx+"']");
 					self._tailItemIdx++;
 					self._headItemIdx++;
 					self._replaceRow( $row, self._tailItemIdx );
@@ -703,8 +723,9 @@ $.extend(MomentumTracker.prototype, {
 				}
 				self._storedScrollPos += di * templateItemSize;
 			} else if ( di < 0 ) { // scroll up
-				for ( i = 0; i > di && self._headItemIdx > 0; i-- ) {
-					$row = $( "[row-index='" + self._tailItemIdx + "']" ,self._$content );
+				for ( ; i > di && self._headItemIdx > 0; i-- ) {
+					//  $row = $( "[row-index='" + self._tailItemIdx + "']" ,self._$content );
+					$row = $content.children( "[row-index='" + self._tailItemIdx + "']" );
 					self._headItemIdx--;
 					self._replaceRow( $row, self._headItemIdx );
 					self._tailItemIdx--;
@@ -712,11 +733,13 @@ $.extend(MomentumTracker.prototype, {
 				}
 				self._storedScrollPos += di * templateItemSize;
 			}
-
+			console.log("[_setScrollPosition] duration : %s ms.",  ( $.now() - startTime ));
 			if ( diffPos < 0 ) {
-				$row =  $( "[row-index='" + self._headItemIdx + "']", self._$content );
+				// $row =  $( "[row-index='" + self._headItemIdx + "']", self._$content );
+				$row =  $content.children( "[row-index='" + self._headItemIdx + "']");
 				if ( $row.position()[attrName] > curPos ) {
-					$row = $( "[row-index='" + self._tailItemIdx + "']" ,self._$content );
+					// $row = $( "[row-index='" + self._tailItemIdx + "']" ,self._$content );
+					$row = $content.children( "[row-index='" + self._tailItemIdx + "']" );
 					self._headItemIdx--;
 					self._replaceRow( $row, self._headItemIdx );
 					self._tailItemIdx--;
@@ -729,6 +752,8 @@ $.extend(MomentumTracker.prototype, {
 			} else {
 				self._$view[ 0 ].scrollTop = y;
 			}
+			duration = $.now() - startTime;
+			window._acTime2 += duration;
 		},
 
 		//----------------------------------------------------//
@@ -750,7 +775,7 @@ $.extend(MomentumTracker.prototype, {
 			$parent = $view.parents( ".ui-content" );
 
 			if ( axis ) {
-				clipSize = window[ "innerHeight" ];
+				clipSize = $( window).innerHeight(); //window[ "innerHeight" ] || window.body.offsetHeight;
 				header = $parent.siblings( ".ui-header" );
 				footer = $parent.siblings( ".ui-footer" );
 				clipSize = clipSize - ( header.outerHeight( true ) || 0);
@@ -758,7 +783,8 @@ $.extend(MomentumTracker.prototype, {
 				paddingName1 = "padding-top";
 				paddingName2 = "padding-bottom";
 			} else {
-				clipSize = window[ "innerWidth" ];
+				// IE 8 does not support window.inner
+				clipSize = $( window).innerWidth(); // window[ "innerWidth" ] || window.body.offsetWidth;
 				paddingName1 = "padding-left";
 				paddingName2 = "padding-right";
 			}
@@ -786,6 +812,8 @@ $.extend(MomentumTracker.prototype, {
 			self._$content.append( $tempBlock );
 			self._$templateItemSize.width = $tempItem.outerWidth( true );
 			self._$templateItemSize.height = $tempItem.outerHeight( true );
+			console.log("templateItemSize  - width : %s ---- height : %s", self._$templateItemSize.width ,  self._$templateItemSize.height);
+			console.log("tempItem  - width : %s ---- height : %s", $tempItem.width() ,  $tempItem.height() );
 			$tempBlock.remove();
 		},
 
@@ -805,6 +833,7 @@ $.extend(MomentumTracker.prototype, {
 				viewSize = viewSize - ( self._scrollBarWidth );
 			}
 			itemCount = parseInt( ( viewSize / templateSize ), 10);
+			// console.debug("[ _calculateColumnCount ] view innerHeight : %s,  innerWidth : %s , viewSize : %s , itemCount : %s " , $view.innerHeight() , $view.innerWidth()  , viewSize, itemCount );
 			return itemCount > 0 ? itemCount : 1 ;
 		},
 
@@ -1025,6 +1054,7 @@ $.extend(MomentumTracker.prototype, {
 				$rows = self._$content.children( "[row-index]" ),
 				$row,
 				rowIndex = 0,
+				rowsLength = $rows.length,
 				idx = 0,
 				diff = 0,
 				ret = self._getCriteriaRow(),
@@ -1033,7 +1063,7 @@ $.extend(MomentumTracker.prototype, {
 			dataIndex = dataIndex % self._itemCount === 0 ? dataIndex / self._itemCount : Math.floor( dataIndex / self._itemCount );
 			diff = ret.index - dataIndex;
 
-			for ( ; idx < $rows.length ; idx++ ) {
+			for ( ; idx < rowsLength ; idx++ ) {
 				$row = $( $rows[ idx ] );
 				rowIndex = parseInt( $row.attr( "row-index" ), 10 );
 				self._replaceRow( $row, rowIndex - diff );
@@ -1051,8 +1081,11 @@ $.extend(MomentumTracker.prototype, {
 
 		_replaceRow : function ( block, index ) {
 			var self = this,
+				startTime, endTime,
 				$block = block.hasChildNodes ? block : block[0],
 				tempBlocks = null;
+
+			startTime = $.now();
 
 			while ( $block.hasChildNodes() ) {
 				$block.removeChild( $block.lastChild );
@@ -1068,6 +1101,9 @@ $.extend(MomentumTracker.prototype, {
 			}
 			$block.setAttribute("row-index", index );
 			tempBlocks.parentNode.removeChild( tempBlocks );
+			endTime = $.now() - startTime;
+			window._acTime += endTime;
+			console.log(" endTime : %s , accumlationTime : %s", endTime, window._acTime );
 		},
 
 		_increaseRow : function ( num ) {
@@ -1119,10 +1155,10 @@ $.extend(MomentumTracker.prototype, {
 				plainMsg,
 				ret;
 			if ( !data ) {
-				return ;
+				return ; 
 			}
 
-			plainMsg = self._template.text();
+			plainMsg = self._template.text() || self._template.html();
 			for ( idx = 0 ; idx < self._properties.length ; idx++ ) {
 				plainMsg = self._strReplace( plainMsg, "${" + self._properties[idx] +"}" , data[ self._properties[ idx ] ] );
 			}
@@ -1138,7 +1174,7 @@ $.extend(MomentumTracker.prototype, {
 			if ( !data ) {
 				return ;
 			}
-			plainMsg = self._template.text();
+			plainMsg = self._template.text() || self._template.html();
 			for ( idx = 0 ; idx < self._properties.length ; idx++ ) {
 				plainMsg = self._strReplace( plainMsg, "${" + self._properties[ idx ] + "}" , data[ self._properties[ idx ] ] );
 			}
