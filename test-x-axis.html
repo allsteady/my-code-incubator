@@ -39,29 +39,12 @@
 					</div>
 					</div>
 				</script>
-				<div id="virtualgrid-demo" data-role="virtualgrid" data-rotation="false" data-template="tizen-demo-namecard" data-direction="x">
+				<div id="virtualgrid-demo" data-role="virtualgrid"  data-template="tizen-demo-namecard" data-direction="x" data-repository="./virtualgrid/virtualgrid-db-demo.json" data-data-type="json" >
 				</div>
 			</div>
 			<div id="normal" data-role="footer" data-position="fixed">
 				<h1>Footer</h1>
 			</div>
-			<script>
-				$( ".virtualgrid_grid_demo_page" ).one( "pagecreate", function() {
-					$.getScript( "./virtualgrid/virtualgrid-db-demo.js", function( data, textStatus, jqXHR ) {
-						$( ".virtualgrid_demo_page" ).die();
-		
-						$( ":jqmData(role='virtualgrid')" ).virtualgrid( "create", {
-							itemData: function ( idx ) {
-								return JSON_DATA[ idx ];
-							},
-							numItemData: JSON_DATA.length,
-							cacheItemData: function ( minIdx, maxIdx ) {
-							}
-						});
-						$( ".virtualgrid_grid_demo_page" ).unbind("pagecreate");
-					});
-				});
-			</script>
 		</div>
 	</body> <!-- BODY -->
 	

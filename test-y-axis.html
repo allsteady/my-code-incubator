@@ -35,11 +35,22 @@
 					<img class="ui-demo-namecard-pic-img" src="${TEAM_LOGO}"  />
 					</div>
 					<div class="ui-demo-namecard-contents">
-					<span class="name ui-li-text-main">${NAME}</span>
+					<span id="playerName" class="name ui-li-text-main">${NAME}</span>
 					</div>
 					</div>
 				</script>
-				<div id="virtualgrid-demo" data-role="virtualgrid" data-rotation="false" data-template="tizen-demo-namecard" data-repository="./virtualgrid/virtualgrid-db-demo.json" data-data-type="json">
+				<script>
+					var replaceHelper = function ( elem, data ) {
+						var root = elem.get ? elem[ 0 ] : elem,
+							targetElem;
+						targetElem = root.getElementsByTagName( "img" )[ 0 ];
+						targetElem.setAttribute("src", data.TEAM_LOGO );
+						targetElem = root.getElementsByTagName( "span" )[ 0 ];
+						targetElem.innerText = data.NAME;
+						return ;
+					};
+				</script>
+				<div id="virtualgrid-demo" data-role="virtualgrid"  data-template="tizen-demo-namecard" data-repository="./virtualgrid/virtualgrid-db-demo.json" data-data-type="json" data-replace-helper ="replaceHelper">
 				</div>
 			</div>
 			<div id="normal" data-role="footer" data-position="fixed">
