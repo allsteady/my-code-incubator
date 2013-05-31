@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="../libs/jquery-1.8.2.js"></script>
+		<style>
+			.box {
+				display:inline-block;
+				width: 9.999%;
+				height :30px;
+				padding: 10px;
+			}
+			.box2 {
+				border-width: 2px;
+				border-style:solid
+			}
+			table {
+				font-family : Arial,Liberation Sans,DejaVu Sans,sans-serif;
+				font-size: 15px;
+				vertical-align :baseline;
+			}
+			table tr:nth-child(even) {
+				background-color: #808080;
+			}
+		</style>
+		<script>
+			var testCases = [];
+			
+			runTest = function ( ) {
+				var idx = 0,
+					results = [];
+				if ( testCases.length === 0 ) {
+					console.log("At least require one test case.");
+					return ;
+				}
+
+				for ( ; idx <  testCases.length ; idx++ ) {
+					results.push ( testExecutor( testCases[idx] ) );
+				}
+				return results;
+			}
+
+			add = function ( tfunc ) {
+				if ( typeof(tfunc) ==  "function" ) {
+					testCases.push( tfunc );
+				}
+			}
+
+			displayResult = function ( resultSet ) {
+				var $table = $(".test-report"),
+					idx = 0,
+					htmlStr = "",
+					subStr = "";
+
+				for ( ; idx <  resultSet.length ; idx++ ) {
+					subStr = "<tr> <td> Test" + (idx + 1) + "</td>";
+					subStr += "<td class='test-content'> " + (resultSet[idx].content) + "</td>";
+					subStr += "<td class='test-return'> " + (resultSet[idx].length) + "</td>";
+					subStr += "<td class='test-result'> " + (resultSet[idx].duration) + "&nbsp;ms.</td></tr>";
+					htmlStr += subStr;
+				}
+				htmlStr +="<tr style='height:15px;'><td></td><td></td><td></td></tr>";
+				$table.append($(htmlStr) );
+			}
+				
+			testExecutor = function ( tfunc, count ) {
+					if ( !tfunc ) {
+						return -1;
+					}
+					var result = {
+							code : 0,
+							ret : null,
+							length : 0,
+							testCount : 0,
+							content : "",
+							duration : 0
+					}, idx = 0, tCount = count || 10000;
+						startTime = 0;
+					
+					result.ret = tfunc();
+					result.length = result.ret.length;
+					result.testCount = tCount;
+					result.content = tfunc.toString();
+					startTime = $.now();
+					for ( ; idx < tCount ; idx++ ) {
+						tfunc();
+					} 
+					result.duration = $.now() - startTime;
+					return result;
+				}
+
+			test1 = function () {
+				return $(".container-lv1").find(".target, .target2, .target3");
+			}
+			test2 = function () {
+				var elem = $(".container-lv1")[0],
+					result = [], temp;
+				temp = elem.getElementsByClassName("target");
+				$.merge(result, temp);
+				temp = elem.getElementsByClassName("target2");
+				$.merge(result, temp);
+				temp = elem.getElementsByClassName("target3");
+				$.merge(result, temp);
+				return result;
+			}
+			test3 = function () {
+				var elem = $(".container-lv1")[0],
+					result = [], temp;
+				temp = elem.getElementsByClassName("target");
+				$.merge(result, temp);
+				temp = elem.getElementsByClassName("target2");
+				$.merge(result, temp);
+				temp = elem.getElementsByClassName("target3");
+				$.merge(result, temp);
+				return $( result );
+			}
+			test4 = function () {
+				 return $(".container-lv1")[0].querySelectorAll(".target, .target2, .target3");
+			}
+			test5 = function () {
+				return $( $(".container-lv1")[0].querySelectorAll(".target, .target2, .target3") );
+			}
+
+			add( test1 );
+			add( test2 );
+			add( test3 );
+			add( test4 );
+			add( test5 );
+		</script>
+		<title> find v.s querySelecotrAll </title>
+	</head>
+	<body>
+		
+		<div style="width: 90%;height: 500px; overflow: auto; padding: 20px;" class="box box2">
+			<button id="runTest"> start</button>
+			<button id="removeTest"> clear</button>
+			<table style="width:100%" class="test-report">
+				<tr style="height: 30px;">
+					<td>Test Name</td>
+					<td>Function</td>
+					<td>Return</td>
+					<td>Duration&nbsp;(ms)</td>
+				</tr>
+			</table>
+		</div>
+		<script>
+				$("#runTest").bind("click", function ( event ) {
+					var result = runTest();
+					displayResult( result );
+				});
+				$("#removeTest").bind("click", function ( event ) {
+					$(".test-result-item").remove();
+				});
+		</script>
+		<div class='container-lv1'>
+			<div class='container-lv2'>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2 target3" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2 target4" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2 target" name='a' ></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2 target2" name='a' ></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+				<div class="box box2" name='a'></div>
+			</div>
+		</div>
+		<!-- container - Lv 1-->
+	</body>
+</html>

@@ -22,8 +22,6 @@
  *
  *	Author: Kangsik Kim <kangsik81.kim@samsung.com>
 */
-window._acTime = 0;
-window._acTime2 = 0;
 ( function ($, window, document, undefined) {
 
 function scrollbarWidth()
@@ -212,7 +210,6 @@ $.extend(MomentumTracker.prototype, {
 				_dataType = self.options.dataType.toLowerCase(),
 				successCB = function ( loadedJsonData ) {
 					$.mobile.loading("hide");
-					console.log("successCB....");
 					self._itemData =  function ( idx ) {
 						return loadedJsonData [ idx ];
 					};
@@ -231,17 +228,14 @@ $.extend(MomentumTracker.prototype, {
 			}
 
 			if (  !( _dataType === "json" ||  _dataType === 'xml')  ){
-				console.log  (" >> dataType : " + _dataType);
 				return ;
 			}
 
 			_replaceHelper =  window[self.options.replaceHelper ];
 			if (  _replaceHelper && $.isFunction( _replaceHelper) ) {
 				self._replaceHelper = _replaceHelper;
-				console.log(" this element has replace function. ")
 			}
 			self.element.bind( "virtualgrid.firstdraw", function ( event ) {
-//				console.debug(" virtualgrid.firstdraw [ PageShow : %s - loadData : %s ] ", self._isPageShow, self._loadedData );
 				if ( self._isPageShow && self._loadedData ) {
 					self.element.unbind("virtualgrid.firstdraw");
 					self.refresh();
@@ -264,17 +258,13 @@ $.extend(MomentumTracker.prototype, {
 				success: successCB,
 				error: errorCB
 			} );
-
 	
 			( self.element.parents(".ui-page") || self._$document ).one( "pageshow  " , function( event ) {
-				// console.debug("[pageshow] page min height : %s ", $(".ui-page").css("min-height") );
 				if ( $( self.options.initSelector,  event.target ).length !== 0  ){
 					self._isPageShow = true;
 					self.element.trigger("virtualgrid.firstdraw");
 				}
 			});
-
-
 		},
 
 		_initWidget : function () {
@@ -335,7 +325,6 @@ $.extend(MomentumTracker.prototype, {
 			self._$clip.width( width ).height( height );
 			self._$clipSize.width = width;
 			self._$clipSize.height = height;
-			console.log("clip width : %s, clip height : %s ", width, height);
 			self._calculateTemplateItemSize();
 			self._initPageProperty();
 
@@ -389,16 +378,11 @@ $.extend(MomentumTracker.prototype, {
 			columnCount = self._calculateColumnCount();
 
 			if ( self._itemCount !== columnCount ) {
-				console.log(" change column count  : %s ", ( columnCount ));
 				self._itemCount = columnCount;
 				totalRowCnt = parseInt( self._numItemData / columnCount, 10 );
 				self._totalRowCnt = self._numItemData % columnCount === 0 ? totalRowCnt : totalRowCnt + 1;
 				self._$content[ cssPropertyName ]( self._totalRowCnt * self._$templateItemSize[ cssPropertyName ] );
-				console.debug( "[ resize - before ]  scrollTop : %s - scrllLeft : %s ", self._$view[0].scrollTop, self._$view[0].scrollLeft );
-				console.debug( "[ resize - before ]  headItemIdx : %s - tailItemIdx : %s ",self._headItemIdx, self._tailItemIdx );
 				self._replaceRows();
-				console.debug( "[ resize - after ]  scrollTop : %s - scrllLeft : %s ", self._$view[0].scrollTop, self._$view[0].scrollLeft );
-				console.debug( "[ resize - after ]  headItemIdx : %s - tailItemIdx : %s\n",self._headItemIdx, self._tailItemIdx );
 				isModified = true;
 			}
 
@@ -409,13 +393,9 @@ $.extend(MomentumTracker.prototype, {
 			}
 
 			if ( rowCount > self._rowsPerView ) {
-				console.log(" increase row : %s ", (rowCount - self._rowsPerView ));
-				console.debug( "[ increase - before ]  row count : %s ",self._$content.children("[row-index]" ).length );
 				self._increaseRow( rowCount - self._rowsPerView );
-				console.debug( "[ increase - after ]  row Count : %s ", self._$content.children("[row-index]\n\n" ).length );
 				isModified = true;
 			} else if ( rowCount < self._rowsPerView ) {
-				console.log(" decrease row : %s ", ( self._rowsPerView  - rowCount ));
 				self._decreaseRow( self._rowsPerView - rowCount );
 				isModified = true;
 			}
@@ -644,28 +624,6 @@ $.extend(MomentumTracker.prototype, {
 			this._tracker.reset();
 			this._disableTracking();
 			this._hideScrollBar();
-			this._checkItemIndex();
-		},
-
-		_checkItemIndex: function (){
-			var $children = this._$content.children( "[row-index]"),
-				length = $children.length,
-				value = 0,
-				idx = 0,
-				maxIndex = -1,
-				minIndex = this._totalRowCnt + 1;
-
-			for( ; idx < length;  idx++ ) {
-				value = $children[ idx ].getAttribute("row-index");
-				if ( value >= maxIndex ) {
-					maxIndex = value;
-				}
-				if ( value <= minIndex ) {
-					minIndex = value;
-				}
-			}
-			// console.log(" max index : %s , min index : %s ", maxIndex, minIndex);
-			// console.log(" max index : %s , min index : %s ", this._tailItemIdx, this._headItemIdx);
 		},
 
 		_startMScroll: function ( speedX, speedY ) {
@@ -1093,27 +1051,19 @@ $.extend(MomentumTracker.prototype, {
 			for ( ; idx < rowsLength ; idx++ ) {
 				$row = $( $rows[ idx ] );
 				rowIndex = parseInt( $row.attr( "row-index" ), 10 );
-				console.debug("\t\t[ replaceRow ( %s ) ] change item index : %s -> %s ( diff : %s )", idx, rowIndex, ( rowIndex - diff ) , diff );
 				self._replaceRow( $row, rowIndex - diff );
 			}
 
-			console.debug("\t[ replaceRow ] data item index : %s ->  ", (ret.index * ret.target.children().length),  dataIndex);
-			console.debug("\t[ replaceRow ] criteriaRow item index : %s  ( diff : %s  - totalRowCnt : %s )", ret.index , diff , self._totalRowCnt );
-			console.debug("\t[ replaceRow ] change item index : %s -> %s ", rowIndex, ( rowIndex - diff ) );
 			
 			if ( self._direction ) {
-				console.debug("\t\t[ replaceRow ] criteriaRow  ( index :%s   ) ", ret.target.attr("row-index"))
-				// self._$view[0].scrollLeft = self._$view[0].scrollLeft - ( ( diff ) * self._$templateItemSize.width );
 				self._$view[0].scrollLeft = ret.target.position().left + ( self._$view[0].scrollLeft % self._$templateItemSize.width );
 				self._storedScrollPos = self._$view[0].scrollLeft;
 			} else {
-				// self._$view[0].scrollTop = self._$view[0].scrollTop - ( ( diff ) * self._$templateItemSize.height );
 				self._$view[0].scrollTop = ret.target.position().top + ( self._$view[0].scrollTop % self._$templateItemSize.height );
 				self._storedScrollPos = self._$view[0].scrollTop;
 			}
 			self._headItemIdx = self._headItemIdx - diff;
 			self._tailItemIdx = self._tailItemIdx - diff;
-			self._checkItemIndex();
 		},
 
 		_replaceRow : function ( block, index ) {
@@ -1184,7 +1134,7 @@ $.extend(MomentumTracker.prototype, {
 				idx = 0;
 
 			for ( ; idx < num ; idx++ ) {
-				$( "[row-index = "+( self._tailItemIdx - idx )+"]", self._$content ).remove();
+				self._$content.children ( "[row-index = "+( self._tailItemIdx - idx )+"]" ).remove();
 			}
 			self._tailItemIdx -= num;
 		},

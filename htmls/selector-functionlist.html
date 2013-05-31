@@ -1,0 +1,112 @@
+<html>
+	<head>
+		<!-- 
+		<script src="http://code.jquery.com/jquery-1.8.2.js"></script>
+		-->
+		<script src="../libs/jquery-1.8.2-modify.js"></script>
+		<script>
+			var $document = $( document );
+			$.querySelectorAll = function ( selector, scope ) {
+				return $.fn.querySelectorAll( selector, scope );
+			};
+			$.fn.querySelectorAll = function ( selector, scope ) {
+				var elems,
+					idx = 0, ret,
+					root = scope ? scope : this[ 0 ] ? this : $document ;
+
+				elems = root[0].querySelectorAll( selector );
+
+				ret = this.constructor();
+				for ( ; idx <elems.length ; idx++ ) {
+					ret[idx] = elems [idx];
+				}
+				ret.selector = ( root.selector ? root.selector + " " : "" )+ selector;
+				ret.length = elems.length;
+				ret.prevObject = root;
+				ret.context = document;
+				return ret;
+			}
+			// Monkey-patching DOM Elements to jQueryObject
+			$.toObject = function ( elems ) {
+				return $.fn.toObject( elems );
+			};
+
+			$.fn.toObject = function ( elems ) {
+				var idx = 0;
+				ret = this.constructor();
+				for ( ; idx <elems.length ; idx++ ) {
+					ret[idx] = elems [idx];
+				}
+				ret.length = elems.length;
+				return ret;
+			};
+		</script>
+		<script>
+			// Test
+			displayResult = function( src, target ){
+				var subStr = "",
+					htmlStr = "",
+					idx = 0,
+					name;
+				for ( name in src ) {
+					subStr = "<tr> <td> Test" + (idx + 1) + "</td>";
+					subStr += "<td class='test-content'> " + name + "</td>";
+					subStr += "<td class='test-return'>  Yes </td>";
+					if ( target [ name ] ) {
+						if ( target [ name ] === src [ name ] ) {
+							subStr += "<td class='test-result'> Yes (full) &nbsp;</td></tr>";
+						} else {
+							subStr += "<td class='test-result'> Yes ( 50 % ) &nbsp;</td></tr>";
+						}
+					} else {
+						subStr += "<td class='test-result'> No &nbsp;</td></tr>";
+					}
+					htmlStr += subStr;
+					idx++;
+				}
+				$(".test-report").append($(htmlStr) );
+			};
+		</script>
+	</head>
+	<body>
+		<div style="width: 90%;height: 500px; overflow: auto; padding: 20px;" class="box box2">
+			<button id="runTest"> start</button>
+			<button id="removeTest"> clear</button>
+			<table style="width:100%" class="test-report">
+				<tr style="height: 30px;">
+					<td>Test Name</td>
+					<td>Function</td>
+					<td>jQuery</td>
+					<td>Custom</td>
+				</tr>
+			</table>
+		</div>
+		<script>
+				$("#runTest").bind("click", function ( event ) {
+					var $page = $("[data-role = 'page']" ),
+						$doc = $( document ), src, target;
+
+					// src = $("[data-role = 'listview']" , $page);
+					// target = $.querySelectorAll( "[data-role = 'listview']", $page );
+
+					src = $("[data-role = 'listview']" );
+					target = $.querySelectorAll( "[data-role = 'listview']" );
+
+					displayResult( src, target );
+				});
+		</script>
+		<div data-role="page">
+			<div data-role="header"></div>
+			<div data-role="content">
+				<ol data-role="listview">
+					<li>Acura</li>
+					<li>Audi</li>
+					<li>BMW</li>
+					<li>Cadillac</li>
+					<li>Ferrari</li>
+				</ol>
+			</div>
+			<div data-role="footer"></div>
+		</div>
+	</body>
+</html>
