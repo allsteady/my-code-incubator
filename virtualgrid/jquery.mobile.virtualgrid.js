@@ -808,7 +808,7 @@ $.extend(MomentumTracker.prototype, {
 				$view = $( self.element ).parents( ".ui-content" ) || $( self.element ),
 				viewSize = self._direction ? $view.innerHeight() : $view.innerWidth(),
 				templateSize = self._direction ? self._$templateItemSize.height : self._$templateItemSize.width,
-				itemCount = 0 ;
+				itemCount = 0;
 
 			if ( self._direction ) {
 				viewSize = viewSize - ( parseInt( $view.css( "padding-top" ), 10 ) + parseInt( $view.css( "padding-bottom" ), 10 ) );
@@ -961,7 +961,7 @@ $.extend(MomentumTracker.prototype, {
 
 		_makeHtmlData : function ( myTemplate, dataIndex, colIndex ) {
 			var self = this,
-				htmlStr = null,
+				htmlStr = "",
 				itemData = null,
 				attrName = self._direction ? "top" : "left";
 
@@ -1053,7 +1053,6 @@ $.extend(MomentumTracker.prototype, {
 				rowIndex = parseInt( $row.attr( "row-index" ), 10 );
 				self._replaceRow( $row, rowIndex - diff );
 			}
-
 			
 			if ( self._direction ) {
 				self._$view[0].scrollLeft = ret.target.position().left + ( self._$view[0].scrollLeft % self._$templateItemSize.width );

@@ -1,0 +1,96 @@
+[{
+	"NAME" : "Abdelnaby, Alaa",
+	"ACTIVE" : "1990 - 1994",
+	"FROM" : "College - Duke",
+	"TEAM_LOGO" : "./images/nba_hawks.jpg"
+}, {
+	"NAME" : "Abdul-Aziz, Zaid",
+	"ACTIVE" : "1968 - 1977",
+	"FROM" : "College - Iowa State",
+	"TEAM_LOGO" : "./images/nba_suns.jpg"
+}, {
+	"NAME" : "Abdul-Jabbar, Kareem",
+	"ACTIVE" : "1969 - 1988",
+	"FROM" : "College - UCLA",
+	"TEAM_LOGO" : "./images/nba_clippers.jpg"
+}, {
+	"NAME" : "Abdul-Rauf, Mahmoud",
+	"ACTIVE" : "1990 - 2000",
+	"FROM" : "College - Louisiana State",
+	"TEAM_LOGO" : "./images/nba_hawks.jpg"
+}, {
+	"NAME" : "Abdul-Wahad, Tariq",
+	"ACTIVE" : "1997 - 2002",
+	"FROM" : "College - San Jose State",
+	"TEAM_LOGO" : "./images/nba_76ers.jpg"
+}, {
+	"NAME" : "Abdur-Rahim, Shareef",
+	"ACTIVE" : "2007 - 2007",
+	"FROM" : "College - California",
+	"TEAM_LOGO" : "./images/nba_knics.jpg"
+}, {
+	"NAME" : "Abernethy, Tom",
+	"ACTIVE" : "1976 - 1980",
+	"FROM" : "College - Indiana",
+	"TEAM_LOGO" : "./images/nba_griz.jpg"
+}, {
+	"NAME" : "Able, Forest Edward (Frosty)",
+	"ACTIVE" : "1956 - 1956",
+	"FROM" : "College - Western Kentucky; Louisville",
+	"TEAM_LOGO" : "./images/nba_nuggets.jpg"
+}, {
+	"NAME" : "Abramovic, John Jr. (Brooms)",
+	"ACTIVE" : "1946 - 1947",
+	"FROM" : "College - Salem (NC)",
+	"TEAM_LOGO" : "./images/nba_suns.jpg"
+}, {
+	"NAME" : "Acker, Alex",
+	"ACTIVE" : "2005 - 2008",
+	"FROM" : "College - Pepperdine",
+	"TEAM_LOGO" : "./images/nba_trail.jpg"
+}, {
+	"NAME" : "Ackerman, Donald D. (Buddy)",
+	"ACTIVE" : "1953 - 1953",
+	"FROM" : "College - Long Island University",
+	"TEAM_LOGO" : "./images/nba_lakers.jpg"
+}, {
+	"NAME" : "Acres, Mark",
+	"ACTIVE" : "1987 - 1992",
+	"FROM" : "College - Oral Roberts",
+	"TEAM_LOGO" : "./images/nba_knics.jpg"
+}, {
+	"NAME" : "Acton, Charles R. (Bud)",
+	"ACTIVE" : "1967 - 1967",
+	"FROM" : "College - Alma; Hillsdale",
+	"TEAM_LOGO" : "./images/nba_jazz.jpg"
+}, {
+	"NAME" : "Adams, Alvan",
+	"ACTIVE" : "1975 - 1987",
+	"FROM" : "College - Oklahoma",
+	"TEAM_LOGO" : "./images/nba_magics.jpg"
+}, {
+	"NAME" : "Adams, Donald L. (Don)",
+	"ACTIVE" : "1970 - 1976",
+	"FROM" : "College - Northwestern",
+	"TEAM_LOGO" : "./images/nba_celtics.jpg"
+}, {
+	"NAME" : "Adams, Hassan",
+	"ACTIVE" : "2006 - 2008",
+	"FROM" : "College - Arizona",
+	"TEAM_LOGO" : "./images/nba_cavaliers.jpg"
+}, {
+	"NAME" : "Adams, Michael",
+	"ACTIVE" : "1985 - 1995",
+	"FROM" : "College - Boston College",
+	"TEAM_LOGO" : "./images/nba_honets.jpg"
+}, {
+	"NAME" : "Addison, Rafael",
+	"ACTIVE" : "1986 - 1996",
+	"FROM" : "College - Syracuse",
+	"TEAM_LOGO" : "./images/nba_raptors.jpg"
+}, {
+	"NAME" : "Adelman, Rick",
+	"ACTIVE" : "1968 - 1974",
+	"FROM" : "College - Loyola Marymount",
+	"TEAM_LOGO" : "./images/nba_timberwolves.jpg"
+}]
