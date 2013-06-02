@@ -182,9 +182,14 @@ $.extend(MomentumTracker.prototype, {
 		_scrollBarWidth :0,
 		_headItemIdx :0,
 		_tailItemIdx :0,
+
 		// axis - ( true : x , false : y )
 		_direction : false,
 		_keepGoing : true,
+
+		//
+		_posAttributeName : "top",
+		_cssAttributeName : "width",
 
 		// timer
 		_timerInterval : 10,
@@ -294,9 +299,13 @@ $.extend(MomentumTracker.prototype, {
 			self._$view = $( document.createElement( "div" ) ).addClass( "ui-virtualgrid-overthrow" );
 			self._$view[0].style.overflow = "auto";
 			if ( self._direction ) {
-				self._$view[0].style[ "overflow-y" ] = "hidden";
+				self._$view[ 0 ].style[ "overflow-y" ] = "hidden";
+				self._cssAttributeName = "width";
+				self._posAttributeName = "left";
 			} else {
-				self._$view[0].style[ "overflow-x" ] = "hidden";
+				self._$view[ 0 ].style[ "overflow-x" ] = "hidden";
+				self._cssAttributeName = "height";
+				self._posAttributeName = "top";
 			}
 			self._$clip.append( self._$view);
 			self._$content = $( "<div class='ui-virtualgrid-content' style='position:relative;' ></div>" );
@@ -417,7 +426,7 @@ $.extend(MomentumTracker.prototype, {
 			}
 
 			self._setScrollBarSize();
-			self._setScrollBarPos( self._$view[0].scrollLeft, self._$view[0].scrollTop );
+			self._setScrollBarPos( self._$view[ 0 ].scrollLeft, self._$view[ 0 ].scrollTop );
 		},
 
 		_initPageProperty : function () {
@@ -462,43 +471,44 @@ $.extend(MomentumTracker.prototype, {
 				self._$content.delegate( "img", "dragstart", function ( event ) {
 					event.preventDefault();
 				});
-				self._$view.bind("scroll", function( event ){
-					var viewElement = self._$view[0];
-					self._setScrollPosition(  viewElement.scrollLeft,  viewElement.scrollTop);
+				self._$view.bind( "scroll", function ( event ) {
+					var viewElement = self._$view[ 0 ];
+					self._setScrollPosition(  viewElement.scrollLeft,  viewElement.scrollTop );
+					event.preventDefault();
 				});
 
 				this._dragStartEvt = "mousedown";
-				this._dragStartCB = function(e){
-					return self._handleDragStart(e, e.clientX, e.clientY);
+				this._dragStartCB = function ( event ) {
+					return self._handleDragStart( event, event.clientX, event.clientY);
 				};
 
 				this._dragMoveEvt = "mousemove";
-				this._dragMoveCB = function(e){
-					return self._handleDragMove(e, e.clientX, e.clientY);
+				this._dragMoveCB = function ( event ) {
+					return self._handleDragMove( event, event.clientX, event.clientY );
 				};
 
 				this._dragStopEvt = "mouseup";
-				this._dragStopCB = function(e){
-					return self._handleDragStop(e);
+				this._dragStopCB = function ( event ) {
+					return self._handleDragStop( event );
 				};
 			} else { // touch event.
 				self._dragStartEvt = "touchstart";
-				self._dragStartCB = function ( e ) {
-					var t = e.originalEvent.targetTouches[0];
-					e.preventDefault();
-					e.stopPropagation();
-					return self._handleDragStart(e, t.pageX, t.pageY );
+				self._dragStartCB = function ( event ) {
+					var t = event.originalEvent.targetTouches[ 0 ];
+					event.preventDefault();
+					event.stopPropagation();
+					return self._handleDragStart( event, t.pageX, t.pageY );
 				};
 
 				self._dragMoveEvt = "touchmove";
-				self._dragMoveCB = function ( e ) {
-					var t = e.originalEvent.targetTouches[0];
-					return self._handleDragMove(e, t.pageX, t.pageY );
+				self._dragMoveCB = function ( event ) {
+					var t = event.originalEvent.targetTouches[ 0 ];
+					return self._handleDragMove( event, t.pageX, t.pageY );
 				};
 
 				self._dragStopEvt = "touchend";
-				self._dragStopCB = function ( e ) {
-					return self._handleDragStop( e );
+				self._dragStopCB = function ( event ) {
+					return self._handleDragStop( event );
 				};
 			}
 			self._$view.bind( self._dragStartEvt, self._dragStartCB );
@@ -1017,20 +1027,19 @@ $.extend(MomentumTracker.prototype, {
 		},
 
 		_getCriteriaRow : function () {
-			var self = this,
-				$row,
-				index = self._headItemIdx,
-				$content = self._$content,
+			var $row,
+				index = this._headItemIdx,
+				$content = this._$content,
 				filterCondition = 0;
 
-			filterCondition = self._$view[0].scrollTop - ( self._$templateItemSize["height"] * 0.9 );
+			filterCondition = self._$view[ 0 ].scrollTop - ( this._$templateItemSize[ this._cssAttributeName ] * 0.9 );
 			do {
 				$row = $content. children( "[row-index='" + index + "']" );
-				if ( $row && $row.position()["top"] >= filterCondition ) {
+				if ( $row && $row.position()[ this._posAttributeName ] >= filterCondition ) {
 					break;
 				}
 				index++;
-			} while ( $row );
+			} while ( $row.length );
 			return { target : $row, index : index };
 		},
 
@@ -1073,6 +1082,10 @@ $.extend(MomentumTracker.prototype, {
 				dataIndex = 0, data = null, $children,
 				tempBlocks = null;
 
+			if ( !$block ) {
+				return ;
+			}
+
 			$children = $block.children;
 			if( self._replaceHelper &&  self._itemCount === $children.length ) {
 				dataIndex = index * self._itemCount;
@@ -1113,11 +1126,14 @@ $.extend(MomentumTracker.prototype, {
 				childCount = 0;
 
 			for ( ; idx < num ; idx++ ) {
-				if ( self._tailItemIdx + idx >= self._totalRowCnt ) {
+				if ( self._tailItemIdx + 1 >  self._totalRowCnt ) {
 					self._headItemIdx -= 1;
 					$row = $( self._makeRow( self._headItemIdx ) );
+					console.log("\t[increaseRow] insert head item. ( %s )", self._headItemIdx );
 				} else {
-					$row = $( self._makeRow( self._tailItemIdx + idx ) );
+					self._tailItemIdx += 1;
+					$row = $( self._makeRow( self._tailItemIdx ) );
+					console.log("\t[increaseRow] insert tail item. ( %s )", self._tailItemIdx );
 					$children = $row.children().detach();
 					for ( childCount = 0; childCount < $children.length ; childCount++ ){
 						$row.append( $children[childCount]);
@@ -1125,17 +1141,27 @@ $.extend(MomentumTracker.prototype, {
 				}
 				self._$content.append( $row );
 			}
-			self._tailItemIdx += num;
+			
 		},
 
 		_decreaseRow : function ( num ) {
 			var self = this,
+				attrName = this._direction ? "left" : "top",
+				$tailRow = null,
+				$headRow = null,
+				position,
 				idx = 0;
 
-			for ( ; idx < num ; idx++ ) {
-				self._$content.children ( "[row-index = "+( self._tailItemIdx - idx )+"]" ).remove();
+			// for ( ; idx < num ; idx++ ) {
+			// 	self._$content.children ( "[row-index = "+( self._tailItemIdx - idx )+"]" ).remove();
+			// }
+			// self._tailItemIdx -= num;
+
+			while ( num-- ) {
+				$tailRow = self._$content.children( "[row-index=" + self._tailItemIdx + "]" );
+				position = $tailRow.position()[ attrName ];
+
 			}
-			self._tailItemIdx -= num;
 		},
 
 		_getObjectNames : function ( obj ) {
