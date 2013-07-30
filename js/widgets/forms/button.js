@@ -5,150 +5,120 @@
 //>>css.structure: ../css/structure/jquery.mobile.button.css
 //>>css.theme: ../css/themes/default/jquery.mobile.theme.css
 
-define( [ "jquery", "../../jquery.mobile.widget", "../../jquery.mobile.buttonMarkup"  ], function( $ ) {
+define( [ "jquery", "../../jquery.mobile.widget", "../../jquery.mobile.registry"  ], function( jQuery ) {
 //>>excludeEnd("jqmBuildExclude");
 (function( $, undefined ) {
 
-$.widget( "mobile.button", $.mobile.widget, {
+$.widget( "mobile.button", {
 	options: {
-		theme: null,
+		theme: "inherit",
 		icon: null,
-		iconpos: null,
+		iconpos: "left",
+		iconshadow: false, /* TODO: Deprecated in 1.4, remove in 1.5. */
 		corners: true,
 		shadow: true,
-		iconshadow: true,
-		initSelector: "button, [type='button'], [type='submit'], [type='reset']"
+		inline: null,
+		mini: null,
+		wrapperClass: null,
+		enhanced: false
 	},
+
 	_create: function() {
-		var $el = this.element,
-			$button,
-			o = this.options,
-			type,
-			name,
-			inline = o.inline || $el.jqmData( "inline" ),
-			mini = o.mini || $el.jqmData( "mini" ),
-			classes = "",
-			$buttonPlaceholder;
 
-		// if this is a link, check if it's been enhanced and, if not, use the right function
-		if ( $el[ 0 ].tagName === "A" ) {
-			if ( !$el.hasClass( "ui-btn" ) ) {
-				$el.buttonMarkup();
-			}
-
-			return;
+		if ( this.element.is( ":disabled" ) ) {
+			this.options.disabled = true;
 		}
 
-		// get the inherited theme
-		// TODO centralize for all widgets
-		if ( !this.options.theme ) {
-			this.options.theme = $.mobile.getInheritedTheme( this.element, "c" );
+		if ( !this.options.enhanced ) {
+			this._enhance();
 		}
 
-		// TODO: Post 1.1--once we have time to test thoroughly--any classes manually applied to the original element should be carried over to the enhanced element, with an `-enhanced` suffix. See https://github.com/jquery/jquery-mobile/issues/3577
-		/* if ( $el[0].className.length ) {
-			classes = $el[0].className;
-		} */
-		if ( !!~$el[0].className.indexOf( "ui-btn-left" ) ) {
-			classes = "ui-btn-left";
-		}
+		$.extend( this, {
+			wrapper: this.element.parent()
+		});
 
-		if (  !!~$el[0].className.indexOf( "ui-btn-right" ) ) {
-			classes = "ui-btn-right";
-		}
-
-		if (  $el.attr( "type" ) === "submit" || $el.attr( "type" ) === "reset" ) {
-			classes ? classes += " ui-submit" :  classes = "ui-submit";
-		}
-		$( "label[for='" + $el.attr( "id" ) + "']" ).addClass( "ui-submit" );
-
-		// Add ARIA role
-		this.button = $( "<div></div>" )
-			[ $el.html() ? "html" : "text" ]( $el.html() || $el.val() )
-			.insertBefore( $el )
-			.buttonMarkup({
-				theme: o.theme,
-				icon: o.icon,
-				iconpos: o.iconpos,
-				inline: inline,
-				corners: o.corners,
-				shadow: o.shadow,
-				iconshadow: o.iconshadow,
-				mini: mini
-			})
-			.addClass( classes )
-			.append( $el.addClass( "ui-btn-hidden" ) );
-
-        $button = this.button;
-		type = $el.attr( "type" );
-		name = $el.attr( "name" );
-
-		// Add hidden input during submit if input type="submit" has a name.
-		if ( type !== "button" && type !== "reset" && name ) {
-				$el.bind( "vclick", function() {
-					// Add hidden input if it doesn't already exist.
-					if ( $buttonPlaceholder === undefined ) {
-						$buttonPlaceholder = $( "<input>", {
-							type: "hidden",
-							name: $el.attr( "name" ),
-							value: $el.attr( "value" )
-						}).insertBefore( $el );
-
-						// Bind to doc to remove after submit handling
-						$( document ).one( "submit", function() {
-							$buttonPlaceholder.remove();
-
-							// reset the local var so that the hidden input
-							// will be re-added on subsequent clicks
-							$buttonPlaceholder = undefined;
-						});
-					}
-				});
-		}
-
-		$el.bind({
+		this._on( {
 			focus: function() {
-				$button.addClass( $.mobile.focusClass );
+				this.widget().addClass( $.mobile.focusClass );
 			},
 
 			blur: function() {
-				$button.removeClass( $.mobile.focusClass );
+				this.widget().removeClass( $.mobile.focusClass );
 			}
 		});
-
-		this.refresh();
+		
+		this.refresh( true );
 	},
 
-	enable: function() {
-		this.element.attr( "disabled", false );
-		this.button.removeClass( "ui-disabled" ).attr( "aria-disabled", false );
-		return this._setOption( "disabled", false );
+	_enhance: function() {
+		this.element.wrap( this._button() );
 	},
 
-	disable: function() {
-		this.element.attr( "disabled", true );
-		this.button.addClass( "ui-disabled" ).attr( "aria-disabled", true );
-		return this._setOption( "disabled", true );
+	_button: function() {
+		return $("<div class='ui-btn ui-input-btn " +
+			this.options.wrapperClass +
+			" ui-btn-" + this.options.theme +
+			( this.options.corners ? " ui-corner-all" : "" ) +
+			( this.options.shadow ? " ui-shadow" : "" ) +
+			( this.options.inline ? " ui-btn-inline" : "" ) +
+			( this.options.mini ? " ui-mini" : "" ) +
+			( this.options.disabled ? " ui-disabled" : "" ) +
+			( this.options.iconpos ? " ui-btn-icon-" + this.options.iconpos : ( this.options.icon ? " ui-btn-icon-left" : "" ) ) +
+			( this.options.icon ? "ui-icon-" + this.options.icon : "" ) +
+			"' >" + this.element.val() + "</div>");
 	},
 
-	refresh: function() {
-		var $el = this.element;
+	widget: function() {
+		return this.wrapper;
+	},
 
-		if ( $el.prop("disabled") ) {
-			this.disable();
-		} else {
-			this.enable();
+	_destroy: function() {
+			this.element.insertBefore( this.button );
+			this.button.remove();
+	},
+
+	_setOptions: function( options ) {
+		if ( options.theme !== undefined ) {
+			this.widget().removeClass( this.options.theme ).addClass( "ui-btn-" + options.theme );
 		}
+		if ( options.corners !== undefined ) {
+			this.widget().toggleClass( "ui-corner-all", options.corners );
+		}
+		if ( options.shadow !== undefined ) {
+			this.widget().toggleClass( "ui-shadow", options.shadow );
+		}
+		if ( options.inline !== undefined ) {
+			this.widget().toggleClass( "ui-btn-inline", options.inline );
+		}
+		if ( options.mini !== undefined ) {
+			this.widget().toggleClass( "ui-mini", options.mini );
+		}
+		if ( options.iconpos !== undefined ) {
+			this.widget().removeClass( "ui-btn-icon-" + options.iconpos );
+		}
+		if ( options.icon !== undefined ) {
+			if ( !this.options.iconpos && !options.iconpos ) {
+				this.widget.toggleClass( "ui-btn-icon-left", options.icon );
+			}
+			this.widget().removeClass( "ui-icon-" + this.options.icon ).toggleClass( "ui-icon-" + options.icon, options.icon );
+		}
+	},
 
-		// Grab the button's text element from its implementation-independent data item
-		$( this.button.data( 'buttonElements' ).text )[ $el.html() ? "html" : "text" ]( $el.html() || $el.val() );
+	refresh: function( create ) {
+		if ( this.options.icon && this.options.iconpos === "notext" && this.element.attr( "title" ) ) {
+			this.element.attr( "title", this.element.val() );
+		}
+		if ( !create ) {
+			var originalElement = this.element.detach();
+			$( this.wrapper ).text( this.element.val() ).append( originalElement );
+		}
 	}
 });
 
+$.mobile.button.initSelector = "[type='button'], [type='submit'], [type='reset']";
+
 //auto self-init widgets
-$( document ).bind( "pagecreate create", function( e ) {
-	$.mobile.button.prototype.enhanceWithin( e.target, true );
-});
+$.mobile._enhancer.add( "mobile.button" );
 
 })( jQuery );
 //>>excludeStart("jqmBuildExclude", pragmas.jqmBuildExclude);

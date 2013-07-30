@@ -1,6 +1,6 @@
 //>>excludeStart("jqmBuildExclude", pragmas.jqmBuildExclude);
-//>>description: Orientation change event
-//>>label: orientationchange
+//>>description: Provides a wrapper around the inconsistent browser implementations of orientationchange
+//>>label: Orientation Change
 //>>group: Events
 
 define( [ "jquery", "../jquery.mobile.support.orientation", "./throttledresize" ], function( jQuery ) {
@@ -9,12 +9,12 @@ define( [ "jquery", "../jquery.mobile.support.orientation", "./throttledresize" 
 (function( $, window ) {
 	var win = $( window ),
 		event_name = "orientationchange",
-		special_event,
 		get_orientation,
 		last_orientation,
 		initial_orientation_is_landscape,
 		initial_orientation_is_default,
-		portrait_map = { "0": true, "180": true };
+		portrait_map = { "0": true, "180": true },
+		ww, wh, landscape_threshold;
 
 	// It seems that some device/browser vendors use window.orientation values 0 and 180 to
 	// denote the "default" orientation. For iOS devices, and most other smart-phones tested,
@@ -44,9 +44,9 @@ define( [ "jquery", "../jquery.mobile.support.orientation", "./throttledresize" 
 		// developer console. The actual threshold value is somewhat arbitrary, we just
 		// need to make sure it is large enough to exclude the developer console case.
 
-		var ww = window.innerWidth || $( window ).width(),
-			wh = window.innerHeight || $( window ).height(),
-			landscape_threshold = 50;
+		ww = window.innerWidth || win.width();
+		wh = window.innerHeight || win.height();
+		landscape_threshold = 50;
 
 		initial_orientation_is_landscape = ww > wh && ( ww - wh ) > landscape_threshold;
 

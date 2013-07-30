@@ -5,7 +5,7 @@
 //>>css.structure:../css/structure/jquery.mobile.grid.css
 //>>css.theme: ../css/themes/default/jquery.mobile.theme.css
 
-define( [ "jquery" ], function( $ ) {
+define( [ "jquery" ], function( jQuery ) {
 //>>excludeEnd("jqmBuildExclude");
 (function( $, undefined ) {
 
@@ -19,11 +19,12 @@ $.fn.grid = function( options ) {
 			$kids = $this.children(),
 			gridCols = { solo:1, a:2, b:3, c:4, d:5 },
 			grid = o.grid,
-			iterator;
+			iterator,
+			letter;
 
 			if ( !grid ) {
 				if ( $kids.length <= 5 ) {
-					for ( var letter in gridCols ) {
+					for ( letter in gridCols ) {
 						if ( gridCols[ letter ] === $kids.length ) {
 							grid = letter;
 						}
